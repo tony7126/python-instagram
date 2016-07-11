@@ -110,7 +110,7 @@ class OAuth2AuthExchangeRequest(object):
         data = self._data_for_exchange(code, username, password, scope=scope, user_id=user_id)
         http_object = Http(disable_ssl_certificate_validation=True)
         url = self.api.access_token_url
-        response, content = requests.post(url, data=data)
+        response = requests.post(url, data=data)
         content = response.text
         parsed_content = simplejson.loads(content.decode())
         if int(response.status_code) != 200:
