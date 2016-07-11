@@ -5,6 +5,7 @@ from hashlib import sha256
 import mimetypes
 import six
 import hmac
+import requests
 
 
 class OAuth2AuthExchangeError(Exception):
@@ -90,7 +91,7 @@ class OAuth2AuthExchangeRequest(object):
                 client_params.update(scope=' '.join(scope))
         elif user_id:
             client_params.update(user_id=user_id)
-        return urlencode(client_params)
+        return client_params
 
     def get_authorize_url(self, scope=None):
         return self._url_for_authorize(scope=scope)
@@ -109,9 +110,10 @@ class OAuth2AuthExchangeRequest(object):
         data = self._data_for_exchange(code, username, password, scope=scope, user_id=user_id)
         http_object = Http(disable_ssl_certificate_validation=True)
         url = self.api.access_token_url
-        response, content = http_object.request(url, method="POST", body=data)
+        response, content = requests.post(url, data=data)
+        content = response.text
         parsed_content = simplejson.loads(content.decode())
-        if int(response['status']) != 200:
+        if int(response.status_code) != 200:
             raise OAuth2AuthExchangeError(parsed_content.get("error_message", ""))
         return parsed_content['access_token'], parsed_content['user']
 
